@@ -1,12 +1,11 @@
 package com.nada.music.ui.theme
 
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -18,35 +17,35 @@ private val DarkColors = darkColorScheme(
     onPrimaryContainer = Color(0xFFFFD8E9),
     secondary = Color(0xFFA5B4FC),
     onSecondary = Color(0xFF1E1B4B),
-    background = Color(0xFF121212),
-    onBackground = Color(0xFFECE6EA),
-    surface = Color(0xFF121212),
-    onSurface = Color(0xFFECE6EA),
+    background = Color(0xFF0E0E10),
+    onBackground = Color.White,
+    surface = Color(0xFF0E0E10),
+    onSurface = Color.White,
     surfaceVariant = Color(0xFF2A2629),
-    onSurfaceVariant = Color(0xFFCFC4C9),
+    onSurfaceVariant = Color.White.copy(alpha = 0.72f),
     surfaceContainer = Color(0xFF1C1A1C),
     surfaceContainerHigh = Color(0xFF262326),
 )
 
-private val LightColors = lightColorScheme(
-    primary = Color(0xFFBE185D),
-    onPrimary = Color.White,
-    primaryContainer = Color(0xFFFFD8E9),
-    onPrimaryContainer = Color(0xFF3B0A24),
-    secondary = Color(0xFF4F46E5),
-    onSecondary = Color.White,
-)
-
+/**
+ * Aplikasi selalu memakai tema gelap supaya teks putih tetap terbaca di atas
+ * latar ambient dan permukaan kaca.
+ */
 @Composable
 fun NadaTheme(content: @Composable () -> Unit) {
-    val dark = isSystemInDarkTheme()
-    val colors = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val ctx = LocalContext.current
-            if (dark) dynamicDarkColorScheme(ctx) else dynamicLightColorScheme(ctx)
-        }
-        dark -> DarkColors
-        else -> LightColors
+    val colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        dynamicDarkColorScheme(LocalContext.current).copy(
+            background = DarkColors.background,
+            surface = DarkColors.surface,
+            onBackground = Color.White,
+            onSurface = Color.White,
+            onSurfaceVariant = Color.White.copy(alpha = 0.72f),
+        )
+    } else {
+        DarkColors
     }
-    MaterialTheme(colorScheme = colors, content = content)
+    MaterialTheme(colorScheme = colors) {
+        // Warna default untuk Text & Icon yang tidak diberi warna eksplisit.
+        CompositionLocalProvider(LocalContentColor provides colors.onBackground, content = content)
+    }
 }

@@ -7,7 +7,9 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import android.graphics.Color
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
@@ -26,8 +28,13 @@ class MainActivity : ComponentActivity() {
     private val openPlayerRequest = mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        // Ikon status bar & navigasi selalu putih (tema gelap).
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+        )
         super.onCreate(savedInstanceState)
+        requestMaxRefreshRate()
 
         playerConnection = PlayerConnection(this)
         handleIntent(intent)
@@ -43,6 +50,22 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * Minta layar berjalan di refresh rate tertinggi yang didukung (90/120/144 Hz)
+     * dengan resolusi yang sama. Beberapa pabrikan tetap bisa membatasi ini lewat
+     * pengaturan sistem atau mode hemat baterai.
+     */
+    @Suppress("DEPRECATION")
+    private fun requestMaxRefreshRate() {
+        val display = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) display else windowManager.defaultDisplay
+        display ?: return
+        val current = display.mode
+        val best = display.supportedModes
+            .filter { it.physicalWidth == current.physicalWidth && it.physicalHeight == current.physicalHeight }
+            .maxByOrNull { it.refreshRate } ?: return
+        window.attributes = window.attributes.apply { preferredDisplayModeId = best.modeId }
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -6,6 +6,7 @@ import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.nada.music.data.Song
+import com.nada.music.data.local.LocalMusic
 
 /**
  * Setiap lagu diberi URI `nada://song/<videoId>`. URL audio sebenarnya baru dicari
@@ -16,7 +17,9 @@ object SongUri {
     private const val SCHEME = "nada"
     private const val HOST = "song"
 
-    fun of(videoId: String): Uri = "$SCHEME://$HOST/$videoId".toUri()
+    /** URI untuk diputar: file lokal langsung, lagu YouTube lewat [StreamResolver]. */
+    fun of(songId: String): Uri =
+        if (LocalMusic.isLocal(songId)) LocalMusic.uriOf(songId) else "$SCHEME://$HOST/$songId".toUri()
 
     fun videoId(uri: Uri): String? =
         if (uri.scheme == SCHEME && uri.host == HOST) uri.lastPathSegment else null

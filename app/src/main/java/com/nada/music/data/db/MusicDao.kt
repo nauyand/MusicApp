@@ -47,6 +47,15 @@ interface MusicDao {
     @Query("SELECT * FROM songs WHERE playCount > 0 ORDER BY playCount DESC, lastPlayedAt DESC LIMIT :limit")
     fun observeMostPlayed(limit: Int): Flow<List<SongEntity>>
 
+    @Query("UPDATE songs SET localAddedAt = :at WHERE id = :id AND localAddedAt IS NULL")
+    suspend fun markLocal(id: String, at: Long)
+
+    @Query("UPDATE songs SET localAddedAt = NULL WHERE id = :id")
+    suspend fun unmarkLocal(id: String)
+
+    @Query("SELECT * FROM songs WHERE localAddedAt IS NOT NULL ORDER BY title COLLATE NOCASE")
+    fun observeLocalSongs(): Flow<List<SongEntity>>
+
     @Query("UPDATE songs SET lastPlayedAt = NULL")
     suspend fun clearHistory()
 

@@ -62,7 +62,7 @@ class HomeViewModel(repository: MusicRepository) : ViewModel() {
 
     /** Rekomendasi = lagu-lagu terkait dari lagu yang terakhir diputar. */
     val recommendations: StateFlow<Recommendations> = repository.history
-        .map { it.firstOrNull() }
+        .map { history -> history.firstOrNull { !com.nada.music.data.local.LocalMusic.isLocal(it.id) } }
         .distinctUntilChanged { a, b -> a?.id == b?.id }
         .mapLatest { seed ->
             if (seed == null) return@mapLatest Recommendations.Ready(null, emptyList())
@@ -85,14 +85,14 @@ fun HomeScreen(onOpenSearch: () -> Unit, contentPadding: PaddingValues) {
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
             colors = com.nada.music.ui.glass.transparentTopBarColors(),
-            title = { Text("Nada", fontWeight = FontWeight.Bold) },
+            title = { Text("Spotiuy", fontWeight = FontWeight.Bold) },
         )
 
         val list = history ?: return@Column
         if (list.isEmpty()) {
             EmptyState(
                 icon = Icons.Rounded.Search,
-                title = "Selamat datang di Nada",
+                title = "Selamat datang di Spotiuy",
                 message = "Cari lagu favoritmu dan mulai dengarkan. Riwayat dan rekomendasi akan muncul di sini.",
                 modifier = Modifier.padding(top = 48.dp),
                 action = { Button(onClick = onOpenSearch) { Text("Cari lagu") } },

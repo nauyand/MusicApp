@@ -1,6 +1,8 @@
 package com.nada.music.ui.glass
 
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -33,6 +35,7 @@ fun GlassDarkTheme(colors: ArtworkColors, content: @Composable () -> Unit) {
             outlineVariant = Color.White.copy(alpha = 0.15f),
         ),
         typography = MaterialTheme.typography,
-        content = content,
-    )
+    ) {
+        CompositionLocalProvider(LocalContentColor provides Color.White, content = content)
+    }
 }

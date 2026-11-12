@@ -14,7 +14,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.PhoneAndroid
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -57,13 +61,21 @@ fun PlaylistScreen(playlistId: Long, onBack: () -> Unit, contentPadding: Padding
     val player = LocalPlayer.current
     val scope = rememberCoroutineScope()
     val isLiked = playlistId == LIKED_PLAYLIST_ID
+    val isLocal = playlistId == LOCAL_PLAYLIST_ID
+    val isSpecial = isLiked || isLocal
+    val specialTitle = if (isLiked) "Lagu favorit" else "Musik lokal"
 
     val title by remember(playlistId) {
-        if (isLiked) flowOf("Lagu favorit") else repository.playlist(playlistId).map { it?.name }
-    }.collectAsState(initial = if (isLiked) "Lagu favorit" else "")
+        if (isSpecial) flowOf(specialTitle) else repository.playlist(playlistId).map { it?.name }
+    }.collectAsState(initial = if (isSpecial) specialTitle else "")
     val songs: List<Song> by remember(playlistId) {
-        if (isLiked) repository.likedSongs else repository.playlistSongs(playlistId)
+        when {
+            isLiked -> repository.likedSongs
+            isLocal -> repository.localSongs
+            else -> repository.playlistSongs(playlistId)
+        }
     }.collectAsState(initial = emptyList())
+    val localImport = if (isLocal) rememberLocalImport() else null
     val currentSong by player.currentSong.collectAsState()
 
     var renaming by remember { mutableStateOf(false) }
@@ -77,12 +89,36 @@ fun PlaylistScreen(playlistId: Long, onBack: () -> Unit, contentPadding: Padding
                 IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Kembali") }
             },
             actions = {
-                if (!isLiked) {
+                if (localImport != null) {
+                    IconButton(onClick = localImport.scan) { Icon(Icons.Rounded.Refresh, "Pindai musik di HP") }
+                    IconButton(onClick = localImport.pickFiles) { Icon(Icons.Rounded.Add, "Tambah file") }
+                }
+                if (!isSpecial) {
                     IconButton(onClick = { renaming = true }) { Icon(Icons.Rounded.Edit, "Ganti nama") }
                     IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Rounded.Delete, "Hapus playlist") }
                 }
             },
         )
+
+        if (localImport?.busy == true) {
+            LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = 16.dp))
+        }
+
+        if (songs.isEmpty() && localImport != null) {
+            EmptyState(
+                icon = Icons.Rounded.PhoneAndroid,
+                title = "Belum ada musik lokal",
+                message = "Pindai HP untuk menemukan semua lagu yang tersimpan, atau pilih file audio sendiri (MP3, M4A, FLAC, OGG, WAV).",
+                modifier = Modifier.padding(top = 48.dp),
+                action = {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Button(onClick = localImport.scan) { Text("Pindai HP") }
+                        FilledTonalButton(onClick = localImport.pickFiles) { Text("Pilih file") }
+                    }
+                },
+            )
+            return@Column
+        }
 
         if (songs.isEmpty()) {
             EmptyState(
@@ -127,11 +163,19 @@ fun PlaylistScreen(playlistId: Long, onBack: () -> Unit, contentPadding: Padding
                     song = song,
                     isCurrent = song.id == currentSong?.id,
                     onClick = { player.playSongs(songs, index) },
-                    extraMenu = if (isLiked) emptyList() else listOf(
-                        MenuAction("Hapus dari playlist", Icons.Rounded.RemoveCircleOutline) {
-                            scope.launch { repository.removeFromPlaylist(playlistId, song.id) }
-                        },
-                    ),
+                    extraMenu = when {
+                        isLiked -> emptyList()
+                        isLocal -> listOf(
+                            MenuAction("Hapus dari musik lokal", Icons.Rounded.RemoveCircleOutline) {
+                                scope.launch { repository.removeLocalSong(song.id) }
+                            },
+                        )
+                        else -> listOf(
+                            MenuAction("Hapus dari playlist", Icons.Rounded.RemoveCircleOutline) {
+                                scope.launch { repository.removeFromPlaylist(playlistId, song.id) }
+                            },
+                        )
+                    },
                 )
             }
         }

@@ -5,6 +5,7 @@ import com.nada.music.data.db.PlaylistEntity
 import com.nada.music.data.db.PlaylistSongEntity
 import com.nada.music.data.db.PlaylistSummary
 import com.nada.music.data.db.toEntity
+import com.nada.music.data.local.LocalMusic
 import com.nada.music.data.lyrics.LrcLib
 import com.nada.music.data.lyrics.Lyrics
 import com.nada.music.data.youtube.SearchResult
@@ -27,7 +28,9 @@ class MusicRepository(
 
     suspend fun suggestions(query: String): List<String> = YouTubeMusic.suggestions(query)
 
-    suspend fun related(songId: String): List<Song> = YouTubeMusic.related(songId)
+    /** Lagu terkait dari YouTube. Lagu lokal tidak punya lagu terkait. */
+    suspend fun related(songId: String): List<Song> =
+        if (LocalMusic.isLocal(songId)) emptyList() else YouTubeMusic.related(songId)
 
     suspend fun lyrics(song: Song): Lyrics = lrcLib.lyricsFor(song)
 
@@ -54,6 +57,20 @@ class MusicRepository(
     }
 
     suspend fun clearHistory() = dao.clearHistory()
+
+    // ---- Musik lokal ----
+
+    val localSongs: Flow<List<Song>> = dao.observeLocalSongs().map { list -> list.map { it.toSong() } }
+
+    suspend fun addLocalSongs(songs: List<Song>) {
+        val now = System.currentTimeMillis()
+        songs.forEach { song ->
+            dao.upsertSong(song.toEntity())
+            dao.markLocal(song.id, now)
+        }
+    }
+
+    suspend fun removeLocalSong(songId: String) = dao.unmarkLocal(songId)
 
     fun playlist(id: Long): Flow<PlaylistEntity?> = dao.observePlaylist(id)
 

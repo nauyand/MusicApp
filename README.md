@@ -1,4 +1,4 @@
-# Nada 🎵
+# Spotiuy 🎵
 
 Pemutar musik Android open source yang memutar lagu dari **YouTube Music**, tanpa iklan dan tanpa login.
 Dibuat dengan Kotlin, Jetpack Compose, Media3 (ExoPlayer), Room, dan NewPipeExtractor.
@@ -14,6 +14,11 @@ Dibuat dengan Kotlin, Jetpack Compose, Media3 (ExoPlayer), Room, dan NewPipeExtr
 - **Rekomendasi**: beranda menampilkan lagu terkait dari lagu terakhir yang kamu putar.
 - **Lirik tersinkron**: lirik dari [LRCLIB](https://lrclib.net) yang bergulir mengikuti lagu.
   Ketuk satu baris untuk lompat ke bagian itu.
+- **Musik lokal**:
+  - **Pindai HP** menemukan semua lagu yang tersimpan di HP (lewat MediaStore);
+  - **Pilih file** menambahkan MP3/M4A/FLAC/OGG/WAV sendiri, lengkap dengan cover bawaan file.
+  - Lagu lokal bisa dimasukkan ke playlist, favorit, dan antrean bersama lagu YouTube. Lirik tetap dicari dari LRCLIB.
+- **Refresh rate maksimal**: aplikasi meminta layar berjalan di 90/120/144 Hz kalau HP mendukung.
 - **Cache audio** 512 MB, jadi lagu yang sering diputar tidak diunduh ulang.
 - **UI kaca ala iOS**:
   - dock mengambang (mini player + tab bar) dari kaca buram, dengan kilau pantulan dan tepi berkilau;

@@ -8,6 +8,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.HttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.CacheDataSource
@@ -61,7 +62,10 @@ class PlaybackService : MediaSessionService() {
             .setCache(PlayerCache.get(this))
             .setUpstreamDataSourceFactory(httpFactory)
             .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
-        val dataSourceFactory = ResolvingDataSource.Factory(cacheFactory, StreamResolver())
+        // DefaultDataSource: content:// & file:// (musik lokal) dibaca langsung,
+        // http(s) (YouTube) lewat cache + OkHttp.
+        val routingFactory = DefaultDataSource.Factory(this, cacheFactory)
+        val dataSourceFactory = ResolvingDataSource.Factory(routingFactory, StreamResolver())
 
         // Sisipkan prosesor efek (vokal, EQ, reverb) ke pipeline audio ExoPlayer.
         val renderersFactory = object : DefaultRenderersFactory(this) {

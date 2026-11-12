@@ -17,6 +17,8 @@ data class SongEntity(
     val likedAt: Long? = null,
     val lastPlayedAt: Long? = null,
     val playCount: Int = 0,
+    /** Diisi kalau lagu ini file lokal yang sudah ditambahkan ke Musik Lokal. */
+    val localAddedAt: Long? = null,
 ) {
     fun toSong() = Song(id, title, artist, thumbnailUrl, durationSec)
 }

@@ -4,13 +4,14 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group
-        android:translateX="30"
-        android:translateY="30">
-        <path
-            android:fillColor="#FFF472B6"
-            android:pathData="M12,3v10.55C11.41,13.21 10.73,13 10,13c-2.21,0 -4,1.79 -4,4s1.79,4 4,4 4,-1.79 4,-4V7h4V3h-6z"
-            android:scaleX="2"
-            android:scaleY="2" />
-    </group>
+    <!-- Cincin kaca tipis -->
+    <path
+        android:pathData="M54,54m-27,0a27,27 0,1 1,54 0a27,27 0,1 1,-54 0"
+        android:strokeWidth="1.5"
+        android:strokeColor="#55FFFFFF"
+        android:fillColor="#14FFFFFF" />
+    <!-- Lima batang equalizer -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M34,46.0 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -6,0 v-10 a3,3 0 0 1 3,-3 z M44,39.0 a3,3 0 0 1 3,3 v24 a3,3 0 0 1 -6,0 v-24 a3,3 0 0 1 3,-3 z M54,32.0 a3,3 0 0 1 3,3 v38 a3,3 0 0 1 -6,0 v-38 a3,3 0 0 1 3,-3 z M64,39.0 a3,3 0 0 1 3,3 v24 a3,3 0 0 1 -6,0 v-24 a3,3 0 0 1 3,-3 z M74,44.0 a3,3 0 0 1 3,3 v14 a3,3 0 0 1 -6,0 v-14 a3,3 0 0 1 3,-3 z" />
 </vector>

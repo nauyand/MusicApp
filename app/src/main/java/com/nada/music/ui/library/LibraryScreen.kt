@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +48,9 @@ import kotlinx.coroutines.launch
 /** id playlist khusus untuk "Lagu favorit". */
 const val LIKED_PLAYLIST_ID = -1L
 
+/** id playlist khusus untuk "Musik lokal". */
+const val LOCAL_PLAYLIST_ID = -2L
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(onOpenPlaylist: (Long) -> Unit, contentPadding: PaddingValues) {
@@ -54,6 +58,7 @@ fun LibraryScreen(onOpenPlaylist: (Long) -> Unit, contentPadding: PaddingValues)
     val scope = rememberCoroutineScope()
     val liked by repository.likedSongs.collectAsState(initial = emptyList())
     val playlists by repository.playlists.collectAsState(initial = emptyList())
+    val localSongs by repository.localSongs.collectAsState(initial = emptyList())
     var creating by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
@@ -71,6 +76,14 @@ fun LibraryScreen(onOpenPlaylist: (Long) -> Unit, contentPadding: PaddingValues)
                     subtitle = "${liked.size} lagu",
                     icon = Icons.Rounded.Favorite,
                     onClick = { onOpenPlaylist(LIKED_PLAYLIST_ID) },
+                )
+            }
+            item {
+                CollectionRow(
+                    title = "Musik lokal",
+                    subtitle = if (localSongs.isEmpty()) "Tambahkan lagu dari HP" else "${localSongs.size} lagu",
+                    icon = Icons.Rounded.PhoneAndroid,
+                    onClick = { onOpenPlaylist(LOCAL_PLAYLIST_ID) },
                 )
             }
             item {
