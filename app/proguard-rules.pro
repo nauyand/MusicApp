@@ -35,3 +35,7 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+
+## Paho MQTT (modul jaringan dimuat lewat ServiceLoader)
+-keep class org.eclipse.paho.client.mqttv3.** { *; }
+-dontwarn org.eclipse.paho.client.mqttv3.**

@@ -6,6 +6,7 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import com.nada.music.audio.AudioSettingsStore
 import com.nada.music.data.MusicRepository
+import com.nada.music.together.ListenTogether
 import com.nada.music.data.db.AppDatabase
 import com.nada.music.data.lyrics.LrcLib
 import com.nada.music.data.youtube.NewPipeDownloader
@@ -41,6 +42,7 @@ class NadaApp : Application(), ImageLoaderFactory {
         )
 
         AudioSettingsStore.init(this)
+        ListenTogether.init(this)
 
         val db = AppDatabase.create(this)
         repository = MusicRepository(db.dao(), LrcLib(okHttpClient))

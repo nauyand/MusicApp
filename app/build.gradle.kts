@@ -100,5 +100,11 @@ dependencies {
     // Ekstraksi YouTube / YouTube Music (pencarian, URL stream, lagu terkait).
     implementation("com.github.TeamNewPipe:NewPipeExtractor:v0.27.1")
 
+    // MQTT untuk fitur "Dengar Bareng".
+    implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
+
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
+    // Broker MQTT lokal untuk menguji sinkronisasi host ↔ pendengar.
+    testImplementation("io.moquette:moquette-broker:0.17")
 }

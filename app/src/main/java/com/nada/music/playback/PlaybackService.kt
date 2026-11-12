@@ -31,6 +31,7 @@ import com.nada.music.MainActivity
 import com.nada.music.NadaApp
 import com.nada.music.R
 import com.nada.music.data.youtube.YouTubeMusic
+import com.nada.music.together.ListenTogether
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -93,6 +94,7 @@ class PlaybackService : MediaSessionService() {
             .build()
 
         player.addListener(PlayerListener())
+        ListenTogether.attach(player)
 
         // Terapkan pengaturan audio setiap kali diubah dari layar Efek Audio.
         scope.launch {
@@ -130,6 +132,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        ListenTogether.detach()
         scope.cancel()
         mediaSession?.run {
             player.release()
@@ -159,6 +162,19 @@ class PlaybackService : MediaSessionService() {
     }
 
     private inner class PlayerListener : Player.Listener {
+
+        override fun onEvents(player: Player, events: Player.Events) {
+            // Host "Dengar Bareng": kabari pendengar setiap ada perubahan pemutaran.
+            if (events.containsAny(
+                    Player.EVENT_MEDIA_ITEM_TRANSITION,
+                    Player.EVENT_IS_PLAYING_CHANGED,
+                    Player.EVENT_POSITION_DISCONTINUITY,
+                    Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
+                )
+            ) {
+                ListenTogether.onPlayerChanged()
+            }
+        }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             mediaItem ?: return
@@ -206,6 +222,8 @@ class PlaybackService : MediaSessionService() {
      * terkait supaya musik tidak berhenti.
      */
     private fun maybeExtendWithRadio() {
+        // Saat ikut room, lagu ditentukan host.
+        if (ListenTogether.isListening) return
         if (player.repeatMode != Player.REPEAT_MODE_OFF) return
         if (player.currentMediaItemIndex < player.mediaItemCount - 1) return
         val currentId = player.currentMediaItem?.mediaId ?: return
