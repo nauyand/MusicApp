@@ -47,6 +47,10 @@ android {
         buildConfig = true
     }
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -88,6 +92,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.9.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("androidx.palette:palette-ktx:1.0.0")
+    // Efek kaca buram (backdrop blur) ala iOS. Blur aktif di Android 12+, versi lama memakai kaca transparan.
+    implementation("dev.chrisbanes.haze:haze:1.1.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Ekstraksi YouTube / YouTube Music (pencarian, URL stream, lagu terkait).

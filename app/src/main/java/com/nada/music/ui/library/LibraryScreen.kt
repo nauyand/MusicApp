@@ -58,6 +58,7 @@ fun LibraryScreen(onOpenPlaylist: (Long) -> Unit, contentPadding: PaddingValues)
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
+            colors = com.nada.music.ui.glass.transparentTopBarColors(),
             title = { Text("Pustaka", fontWeight = FontWeight.Bold) },
             actions = {
                 IconButton(onClick = { creating = true }) { Icon(Icons.Rounded.Add, "Playlist baru") }

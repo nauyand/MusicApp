@@ -83,7 +83,10 @@ fun HomeScreen(onOpenSearch: () -> Unit, contentPadding: PaddingValues) {
     val currentSong by player.currentSong.collectAsState()
 
     Column(Modifier.fillMaxSize()) {
-        TopAppBar(title = { Text("Nada", fontWeight = FontWeight.Bold) })
+        TopAppBar(
+            colors = com.nada.music.ui.glass.transparentTopBarColors(),
+            title = { Text("Nada", fontWeight = FontWeight.Bold) },
+        )
 
         val list = history ?: return@Column
         if (list.isEmpty()) {

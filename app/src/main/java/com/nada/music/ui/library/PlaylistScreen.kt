@@ -71,6 +71,7 @@ fun PlaylistScreen(playlistId: Long, onBack: () -> Unit, contentPadding: Padding
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
+            colors = com.nada.music.ui.glass.transparentTopBarColors(),
             title = { Text(title.orEmpty()) },
             navigationIcon = {
                 IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Kembali") }

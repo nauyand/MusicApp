@@ -57,6 +57,7 @@ import com.nada.music.ui.LocalPlayer
 import com.nada.music.ui.components.EmptyState
 import com.nada.music.ui.components.SongRow
 import com.nada.music.ui.components.friendlyError
+import com.nada.music.ui.glass.glass
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -189,6 +190,7 @@ fun SearchScreen(contentPadding: PaddingValues) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .glass(shape = RoundedCornerShape(28.dp))
                 .focusRequester(focusRequester),
             placeholder = { Text("Cari lagu, artis…") },
             leadingIcon = { Icon(Icons.Rounded.Search, null) },
@@ -200,6 +202,8 @@ fun SearchScreen(contentPadding: PaddingValues) {
             singleLine = true,
             shape = RoundedCornerShape(28.dp),
             colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
             ),

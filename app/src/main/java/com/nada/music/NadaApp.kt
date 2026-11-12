@@ -4,6 +4,7 @@ import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
+import com.nada.music.audio.AudioSettingsStore
 import com.nada.music.data.MusicRepository
 import com.nada.music.data.db.AppDatabase
 import com.nada.music.data.lyrics.LrcLib
@@ -38,6 +39,8 @@ class NadaApp : Application(), ImageLoaderFactory {
             Localization(locale.language.ifBlank { "id" }, country),
             ContentCountry(country),
         )
+
+        AudioSettingsStore.init(this)
 
         val db = AppDatabase.create(this)
         repository = MusicRepository(db.dao(), LrcLib(okHttpClient))

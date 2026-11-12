@@ -12,7 +12,14 @@ import androidx.media3.datasource.HttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.audio.AudioSink
+import androidx.media3.exoplayer.audio.DefaultAudioSink
+import com.nada.music.audio.AudioSettingsStore
+import com.nada.music.audio.EffectsAudioProcessor
+import android.content.Context
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
@@ -43,6 +50,7 @@ class PlaybackService : MediaSessionService() {
     /** Lagu yang sudah dicoba ulang setelah error, supaya tidak berulang tanpa henti. */
     private var retriedMediaId: String? = null
     private var radioLoadingFor: String? = null
+    private val effects = EffectsAudioProcessor()
 
     override fun onCreate() {
         super.onCreate()
@@ -55,7 +63,19 @@ class PlaybackService : MediaSessionService() {
             .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
         val dataSourceFactory = ResolvingDataSource.Factory(cacheFactory, StreamResolver())
 
-        player = ExoPlayer.Builder(this)
+        // Sisipkan prosesor efek (vokal, EQ, reverb) ke pipeline audio ExoPlayer.
+        val renderersFactory = object : DefaultRenderersFactory(this) {
+            override fun buildAudioSink(
+                context: Context,
+                enableFloatOutput: Boolean,
+                enableAudioTrackPlaybackParams: Boolean,
+            ): AudioSink =
+                DefaultAudioSink.Builder(context)
+                    .setAudioProcessorChain(DefaultAudioSink.DefaultAudioProcessorChain(effects))
+                    .build()
+        }
+
+        player = ExoPlayer.Builder(this, renderersFactory)
             .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
             .setAudioAttributes(
                 AudioAttributes.Builder()
@@ -69,6 +89,14 @@ class PlaybackService : MediaSessionService() {
             .build()
 
         player.addListener(PlayerListener())
+
+        // Terapkan pengaturan audio setiap kali diubah dari layar Efek Audio.
+        scope.launch {
+            AudioSettingsStore.settings.collect { settings ->
+                effects.apply(settings)
+                player.playbackParameters = PlaybackParameters(settings.speed, settings.pitchFactor)
+            }
+        }
 
         val openApp = PendingIntent.getActivity(
             this,

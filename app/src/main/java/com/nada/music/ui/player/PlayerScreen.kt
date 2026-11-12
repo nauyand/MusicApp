@@ -31,10 +31,8 @@ import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -60,12 +58,34 @@ import com.nada.music.ui.LocalRepository
 import com.nada.music.ui.components.Artwork
 import com.nada.music.ui.components.MenuAction
 import com.nada.music.ui.components.SongRow
+import com.nada.music.audio.AudioSettingsStore
+import com.nada.music.ui.glass.ArtworkBackdrop
+import com.nada.music.ui.glass.ArtworkColors
+import com.nada.music.ui.glass.GlassDarkTheme
+import com.nada.music.ui.glass.glass
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import kotlinx.coroutines.launch
 
 private enum class PlayerPanel { Artwork, Lyrics, Queue }
 
 @Composable
-fun PlayerScreen(onClose: () -> Unit) {
+fun PlayerScreen(colors: ArtworkColors, onClose: () -> Unit, onOpenEffects: () -> Unit) {
+    val song by LocalPlayer.current.currentSong.collectAsState()
+    GlassDarkTheme(colors) {
+        Box(Modifier.fillMaxSize()) {
+            ArtworkBackdrop(song?.thumbnailUrl, colors)
+            PlayerContent(onClose, onOpenEffects)
+        }
+    }
+}
+
+@Composable
+private fun PlayerContent(onClose: () -> Unit, onOpenEffects: () -> Unit) {
     val player = LocalPlayer.current
     val song by player.currentSong.collectAsState()
     val current = song
@@ -95,6 +115,8 @@ fun PlayerScreen(onClose: () -> Unit) {
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.weight(1f),
             )
+            TempoChip(onClick = onOpenEffects)
+            IconButton(onClick = onOpenEffects) { Icon(Icons.Rounded.Tune, "Efek audio") }
         }
 
         Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -105,13 +127,20 @@ fun PlayerScreen(onClose: () -> Unit) {
                 ) {
                     Artwork(
                         current.thumbnailUrl,
-                        Modifier.fillMaxWidth().aspectRatio(1f),
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .shadow(24.dp, RoundedCornerShape(20.dp)),
                         size = null,
-                        corner = 16.dp,
+                        corner = 20.dp,
                     )
                 }
-                PlayerPanel.Lyrics -> LyricsView(current, position)
-                PlayerPanel.Queue -> QueueView()
+                PlayerPanel.Lyrics -> Box(
+                    Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp).glass(),
+                ) { LyricsView(current, position) }
+                PlayerPanel.Queue -> Box(
+                    Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp).glass(),
+                ) { QueueView() }
             }
         }
 
@@ -120,7 +149,11 @@ fun PlayerScreen(onClose: () -> Unit) {
         Controls()
 
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
+            Modifier
+                .padding(horizontal = 24.dp, vertical = 8.dp)
+                .fillMaxWidth()
+                .glass(shape = RoundedCornerShape(28.dp))
+                .padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             PanelToggle(Icons.Rounded.Lyrics, "Lirik", panel == PlayerPanel.Lyrics) {
@@ -219,15 +252,18 @@ private fun Controls() {
         IconButton(onClick = player::previous, Modifier.size(56.dp)) {
             Icon(Icons.Rounded.SkipPrevious, "Sebelumnya", Modifier.size(36.dp))
         }
-        FilledIconButton(
-            onClick = player::togglePlayPause,
-            modifier = Modifier.size(72.dp),
-            colors = IconButtonDefaults.filledIconButtonColors(),
+        Box(
+            Modifier
+                .size(76.dp)
+                .glass(shape = CircleShape, tint = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.16f))
+                .clip(CircleShape)
+                .clickable(onClick = player::togglePlayPause),
+            contentAlignment = Alignment.Center,
         ) {
             when {
                 isBuffering && !isPlaying -> CircularProgressIndicator(
                     Modifier.size(32.dp),
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     strokeWidth = 3.dp,
                 )
                 isPlaying -> Icon(Icons.Rounded.Pause, "Jeda", Modifier.size(40.dp))
@@ -296,4 +332,24 @@ private fun QueueView() {
         }
         item { Spacer(Modifier.height(16.dp)) }
     }
+}
+
+/** Menampilkan kecepatan/nada yang sedang aktif, misalnya "0.85x · −3". */
+@Composable
+private fun TempoChip(onClick: () -> Unit) {
+    val settings by AudioSettingsStore.settings.collectAsState()
+    if (!settings.isTempoModified) return
+    val pitch = settings.pitchSemitones
+    val label = buildString {
+        append("%.2fx".format(settings.speed))
+        if (pitch != 0f) append(" · ").append(if (pitch > 0) "+" else "−").append("%.1f".format(kotlin.math.abs(pitch)).removeSuffix(".0"))
+    }
+    Text(
+        label,
+        style = MaterialTheme.typography.labelMedium,
+        modifier = Modifier
+            .glass(shape = RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+    )
 }

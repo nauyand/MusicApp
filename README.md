@@ -15,7 +15,22 @@ Dibuat dengan Kotlin, Jetpack Compose, Media3 (ExoPlayer), Room, dan NewPipeExtr
 - **Lirik tersinkron**: lirik dari [LRCLIB](https://lrclib.net) yang bergulir mengikuti lagu.
   Ketuk satu baris untuk lompat ke bagian itu.
 - **Cache audio** 512 MB, jadi lagu yang sering diputar tidak diunduh ulang.
-- Material You (warna dinamis di Android 12+), mode gelap/terang.
+- **UI kaca ala iOS**:
+  - dock mengambang (mini player + tab bar) dari kaca buram, dengan kilau pantulan dan tepi berkilau;
+  - latar ambient yang warnanya mengikuti cover lagu;
+  - layar pemutar berlatar cover yang dibuat buram.
+  - Blur asli aktif di Android 12+; versi lama memakai kaca transparan.
+- **Efek Audio** (tombol ⚙︎ di layar pemutar):
+  - **Kecepatan** 0.5x–2x dan **nada (pitch)** −12 sampai +12 semitone, dengan preset Slowed,
+    Slowed + Reverb, Nightcore, dan Sped Up.
+  - **Equalizer 5 band** (60 Hz – 14 kHz) dengan preset Bass Boost, Pop, Rock, Dangdut, Vokal, Jazz, dan Treble.
+  - **Reverb** (algoritma Freeverb) dengan pengaturan jumlah dan ukuran ruang.
+  - **Mode vokal**: Normal, *Instrumental* (vokal dihilangkan), atau *Vokal saja*.
+    - Caranya dengan memisahkan bagian tengah stereo, bukan AI, jadi hasilnya tidak sempurna:
+      sisa vokal atau musik masih bisa terdengar.
+    - Tidak berfungsi pada audio mono.
+  - Semua efek diproses sendiri di pipeline ExoPlayer (`audio/EffectsAudioProcessor.kt`), jadi hasilnya
+    sama di semua HP dan tidak bergantung pada equalizer bawaan pabrikan.
 
 ## Cara kerja singkat
 
@@ -71,8 +86,9 @@ app/src/main/java/com/nada/music/
 │   ├── youtube/               # NewPipeDownloader, YouTubeMusic (search, stream, related)
 │   ├── lyrics/LrcLib.kt       # lirik + parser LRC + pembersih judul
 │   └── db/                    # Room: lagu, playlist, relasi
+├── audio/                     # pengaturan & DSP: EQ (biquad), reverb (Freeverb), mode vokal
 ├── playback/                  # PlaybackService, StreamResolver, PlayerCache, PlayerConnection
-└── ui/                        # Compose: home, search, library, player, components, theme
+└── ui/                        # Compose: home, search, library, player, effects, glass, theme
 ```
 
 ## Catatan penting
@@ -86,6 +102,8 @@ app/src/main/java/com/nada/music/
 - Terlalu banyak request dari satu IP (misalnya VPN atau server) bisa membuat YouTube meminta captcha atau
   membalas 403. Biasanya ini hilang sendiri setelah beberapa saat.
 - Sebelum membagikan APK release, ganti `signingConfig` di `app/build.gradle.kts` dengan keystore milikmu.
+  Kalau tidak, versi yang di-build dari komputer lain tidak bisa dipasang sebagai update di atas versi lama.
+- Proyek ini butuh Gradle JDK 17 atau 21. Gradle 8.11 tidak bisa berjalan dengan JDK 25.
 
 ## Lisensi
 
