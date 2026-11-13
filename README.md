@@ -1,6 +1,6 @@
 # Spotiuy 🎵
 
-Pemutar musik Android open source yang memutar lagu dari **YouTube Music**, tanpa iklan dan tanpa login.
+Pemutar musik Android open source yang memutar lagu dari **YouTube Music**, tanpa iklan , gratis dan tanpa login.
 Dibuat dengan Kotlin, Jetpack Compose, Media3 (ExoPlayer), Room, dan NewPipeExtractor.
 
 ## Fitur
